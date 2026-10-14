@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#28241f" />
+  <meta name="description" content="Pollo a la brasa, broaster, lomitos y hamburguesas de Pollos Sabroson. Pide fácil, con delivery o recojo." />
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+
+  <!-- Vista previa al compartir el enlace (WhatsApp, Facebook, etc.).
+       IMPORTANTE: cuando tengas tu dominio, cambia las dos direcciones de imagen de abajo por
+       la dirección COMPLETA, por ejemplo https://tudominio.com/assets/og-image.jpg
+       (WhatsApp y Facebook no leen rutas relativas). -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Pollos Sabroson" />
+  <meta property="og:locale" content="es_BO" />
+  <meta property="og:title" content="Pollos Sabroson — El sabor que une a la familia" />
+  <meta property="og:description" content="Pollo a la brasa, broaster, lomitos y hamburguesas. Pide fácil, con delivery o recojo." />
+  <meta property="og:image" content="./assets/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Pollos Sabroson — El sabor que une a la familia" />
+  <meta name="twitter:description" content="Pollo a la brasa, broaster, lomitos y hamburguesas. Pide fácil, con delivery o recojo." />
+  <meta name="twitter:image" content="./assets/og-image.jpg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&display=swap" rel="stylesheet" />
+  <title>Pollos Sabroson — El sabor que une a la familia</title>
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+
+<!-- ============================================================
+     TIENDA
+     ============================================================ -->
+<div class="site-shell" id="siteShell">
+
+  <!-- Aviso de tienda cerrada / pausada (lo llena js/app.js) -->
+  <div class="store-banner" id="storeBanner" role="status" aria-live="polite" hidden></div>
+
+  <!-- ===================== HEADER ===================== -->
+  <header class="site-header">
+    <div class="nav-inner">
+      <a class="brand-link" href="#inicio">
+        <div class="brand-mark" aria-label="Pollos Sabroson">
+          <span class="brand-mark-icon" data-icon="flame" data-size="18" data-stroke="2.6"></span>
+          <span class="brand-copy"><strong>pollos</strong><em>sabroson</em></span>
+        </div>
+      </a>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="#inicio">Inicio</a>
+        <a href="#menu">Menú</a>
+        <a href="#favoritos">Favoritos</a>
+        <a href="#ubicacion">Ubicación</a>
+        <button class="nav-account" id="btnAccount">
+          <span data-icon="circle-user-round" data-size="16"></span> Mi cuenta
+        </button>
+        <button class="nav-admin" id="btnAdmin">
+          <span data-icon="circle-user-round" data-size="16"></span> Administrador
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <div class="header-search">
+          <span data-icon="search" data-size="16"></span>
+          <input id="searchInput" type="search" placeholder="Buscar en el menú" aria-label="Buscar en el menú" autocomplete="off" />
+        </div>
+        <button class="header-icon search-trigger" id="btnSearchMobile" aria-label="Buscar en el menú">
+          <span data-icon="search" data-size="20"></span>
+        </button>
+        <button class="header-icon share-trigger" id="btnShare" type="button" aria-label="Compartir la tienda" title="Compartir la tienda">
+          <span data-icon="share-2" data-size="20"></span>
+        </button>
+        <button class="header-icon mp-trigger" id="btnMisPedidos" type="button" hidden aria-label="Mis pedidos y notificaciones" title="Mis pedidos">
+          <span data-icon="bell" data-size="20"></span>
+          <span class="mp-badge" id="mpBadge" hidden>0</span>
+        </button>
+        <div class="user-chip-wrap" id="userChipWrap" hidden>
+          <button class="user-chip" id="userChip" aria-haspopup="true" aria-expanded="false">
+            <span class="user-chip-avatar" id="userChipAvatar">?</span>
+            <span class="user-chip-name" id="userChipName"></span>
+          </button>
+          <div class="user-menu" id="userMenu" hidden>
+            <div class="user-menu-head"><strong id="userMenuName"></strong><span id="userMenuEmail"></span></div>
+            <button type="button" id="userMenuPedidos">Mis pedidos</button>
+            <button type="button" id="userMenuAdmin" hidden>Panel de administración</button>
+            <button type="button" id="userMenuLogout">Cerrar sesión</button>
+          </div>
+        </div>
+        <button class="header-icon cart-trigger" id="btnCart" aria-label="Abrir bolsa">
+          <span data-icon="shopping-bag" data-size="20"></span>
+          <span class="cart-count" id="cartCount" hidden>0</span>
+        </button>
+        <button class="mobile-menu-button" id="btnMobileMenu" aria-label="Menú">
+          <span data-icon="menu" data-size="21"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ===================== HERO ===================== -->
+    <section class="hero-section" id="inicio">
+      <div class="hero-media" aria-hidden="true"></div>
+
+      <div class="hero-content container">
+        <div class="hero-copy">
+          <p class="eyebrow light"><span></span>Sabor que se comparte</p>
+          <h1 id="heroTitulo">El sabor que<br /><i>une a la familia.</i></h1>
+          <p>Pollo jugoso, papas doraditas y recetas hechas con cariño. Pide fácil, disfruta más.</p>
+          <div class="hero-actions">
+            <a class="primary-button" href="#menu">Ver el menú <span data-icon="arrow-right" data-size="17"></span></a>
+            <a class="text-link light-link" href="#ubicacion">Visítanos <span data-icon="map-pin" data-size="16"></span></a>
+          </div>
+        </div>
+        <div class="hero-logo">
+          <img src="./assets/logo-sabroson.jpg" alt="Logo de Pollos Sabroson" width="640" height="366" />
+        </div>
+      </div>
+
+      <div class="hero-stats container">
+        <div><strong>+15</strong><span>años cocinando<br />momentos</span></div>
+        <div><strong>24</strong><span>opciones en<br />nuestro menú</span></div>
+        <div><strong>100%</strong><span>hecho al<br />momento</span></div>
+      </div>
+    </section>
+
+    <!-- ===================== PROMESAS ===================== -->
+    <section class="promise-strip">
+      <div class="container promise-grid">
+        <div>
+          <span class="promise-icon" data-icon="flame" data-size="19"></span>
+          <div><strong>Recién hecho</strong><span>Directo de la brasa</span></div>
+        </div>
+        <div>
+          <span class="promise-icon" data-icon="truck" data-size="19"></span>
+          <div><strong>Delivery fácil</strong><span id="textoDelivery">Coordinamos la entrega en tu dirección</span></div>
+        </div>
+        <div>
+          <span class="promise-icon" data-icon="heart" data-size="19"></span>
+          <div><strong>Hecho con cariño</strong><span>Recetas de la casa</span></div>
+        </div>
+        <div>
+          <span class="promise-icon" data-icon="check" data-size="19"></span>
+          <div><strong>Precios claros</strong><span>Sin sorpresas</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== CATEGORÍAS ===================== -->
+    <section class="categories-section section-pad" id="favoritos">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow"><span></span>Explora el sabor</p>
+          <h2>¿Qué se te antoja hoy?</h2>
+          <p class="section-detail">Elige una categoría y descubre tus próximos favoritos.</p>
+        </div>
+        <div class="category-grid" id="categoryGrid"></div>
+      </div>
+    </section>
+
+    <!-- ===================== MENÚ ===================== -->
+    <section class="menu-section section-pad" id="menu">
+      <div class="container">
+        <div class="menu-topline">
+          <div class="section-heading">
+            <p class="eyebrow"><span></span>Nuestro menú</p>
+            <h2>Favoritos de la casa</h2>
+            <p class="section-detail">Todo lo que necesitas para comer rico, sin complicaciones.</p>
+          </div>
+          <button class="outline-button desktop-only" id="btnVerTodo">
+            Ver todo el menú <span data-icon="arrow-right" data-size="16"></span>
+          </button>
+        </div>
+
+        <div class="menu-search" role="search">
+          <span data-icon="search" data-size="18"></span>
+          <input id="menuSearchInput" type="search" placeholder="Buscar: lomito, broaster, económico..." aria-label="Buscar en el menú" autocomplete="off" />
+          <button type="button" class="menu-search-clear" id="menuSearchClear" aria-label="Borrar búsqueda" hidden>&times;</button>
+        </div>
+
+        <div class="filter-bar">
+          <div class="filter-tabs" id="filterTabs"></div>
+          <span class="menu-count" id="menuCount">Cargando menú...</span>
+        </div>
+
+        <div id="menuResults"></div>
+      </div>
+    </section>
+
+    <!-- ===================== HISTORIA ===================== -->
+    <section class="story-section">
+      <div class="container story-grid">
+        <div class="story-visual">
+          <img src="./assets/food/lomito.jpg" alt="Combo familiar de Pollos Sabroson" />
+          <div class="story-stamp">
+            <span>✦</span>
+            <strong>El sabor<br />de casa</strong>
+          </div>
+        </div>
+        <div class="story-copy">
+          <p class="eyebrow"><span></span>Nuestra manera</p>
+          <h2>El secreto está<br />en hacerlo <i>bien.</i></h2>
+          <p>Seleccionamos cada ingrediente, sazonamos con paciencia y dejamos que el fuego haga lo suyo. Porque cuando se cocina con intención, se nota en cada bocado.</p>
+          <div class="story-signature">
+            <div class="signature-line"></div>
+            <span>Pollos Sabroson</span>
+          </div>
+          <a class="text-link dark-link" href="#ubicacion">Ver más <span data-icon="arrow-right" data-size="16"></span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== UBICACIÓN ===================== -->
+    <section class="location-section section-pad" id="ubicacion">
+      <div class="container location-grid">
+        <div>
+          <div class="section-heading">
+            <p class="eyebrow"><span></span>Ven a visitarnos</p>
+            <h2>Siempre hay un lugar para ti.</h2>
+            <p class="section-detail">Pasa por tu pedido o escríbenos y te lo llevamos a donde estés.</p>
+          </div>
+          <div class="location-details">
+            <div>
+              <span data-icon="map-pin" data-size="18"></span>
+              <!-- Este texto es solo el "de fábrica": se ve un instante
+                   mientras carga la página. Apenas corre js/app.js, se
+                   reemplaza por la dirección de js/config.js (CONFIG_MANUAL)
+                   o por la guardada en el panel admin / Supabase.
+                   Para cambiar la dirección desde el código, edita
+                   js/config.js en vez de esta línea. -->
+              <span id="direccionNegocio">Frente a la parada de Warnes<br /><small>Warnes - Santa Cruz</small></span>
+            </div>
+            <div>
+              <span data-icon="clock3" data-size="18"></span>
+              <span>Todos los días<br /><small>11:00 — 22:30</small></span>
+            </div>
+            <div>
+              <span data-icon="phone" data-size="18"></span>
+              <span id="telefonoNegocio">700 00000<br /><small>Pedidos y pagos</small></span>
+            </div>
+          </div>
+          <a class="primary-button" href="#menu">Ver opciones de pedido <span data-icon="arrow-right" data-size="17"></span></a>
+        </div>
+
+        <div class="map-card" id="mapaUbicacion">
+          <!-- Mapa de Pollos Sabroson (Warnes). Se puede cambiar desde el
+               panel admin (Ajustes) o en js/config.js (MAPA_URL). -->
+          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d243396.68934889307!2d-63.29470904518994!3d-17.599255200209548!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x93f1e1dfe80b7e85%3A0x6798db8819253304!2s%22POLLOS%20SABROSON%22!5e0!3m2!1ses!2sbo!4v1790178563010!5m2!1ses!2sbo" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" title="Ubicación de Pollos Sabroson en Google Maps"></iframe>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <div class="brand-mark brand-mark-light" aria-label="Pollos Sabroson">
+          <span class="brand-mark-icon" data-icon="flame" data-size="18" data-stroke="2.6"></span>
+          <span class="brand-copy"><strong>pollos</strong><em>sabroson</em></span>
+        </div>
+        <p>Comida rica, momentos<br />que se quedan.</p>
+        <div class="socials">
+          <a href="#instagram" aria-label="Instagram"><span data-icon="instagram" data-size="17"></span></a>
+          <a href="#ubicacion" aria-label="Contacto"><span data-icon="map-pin" data-size="17"></span></a>
+        </div>
+      </div>
+      <div class="footer-column">
+        <strong>Explora</strong>
+        <a href="#menu">Nuestro menú</a>
+        <a href="#favoritos">Favoritos</a>
+        <a href="#ubicacion">Ubicación</a>
+        <a href="#" data-compartir>Compartir la tienda</a>
+      </div>
+      <div class="footer-column">
+        <strong>Ayuda</strong>
+        <a href="#ubicacion">Preguntas frecuentes</a>
+        <a href="#ubicacion">Delivery</a>
+        <a href="#ubicacion">Contáctanos</a>
+      </div>
+      <div class="footer-newsletter">
+        <strong>Recibe algo sabroso</strong>
+        <p>Promos, novedades y antojos directo a tu correo.</p>
+        <div class="newsletter-form">
+          <input placeholder="Tu correo electrónico" type="email" id="newsletterInput" />
+          <button aria-label="Suscribirse" id="btnNewsletter"><span data-icon="arrow-right" data-size="17"></span></button>
+        </div>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <span>© <span id="year"></span> <span data-brand-name>Pollos Sabroson</span></span>
+      <span>Hecho con sabor en Bolivia</span>
+      <span>Privacidad · Términos</span>
+    </div>
+  </footer>
+
+  <a class="floating-order" href="#menu" aria-label="Ver opciones de pedido">
+    <span data-icon="shopping-bag" data-size="22"></span>
+  </a>
+
+  <!-- Seguimiento del último pedido (lo muestra js/app.js mientras haya un pedido en curso) -->
+  <button class="order-tracker" id="orderTracker" type="button" hidden aria-label="Ver el seguimiento de mi pedido">
+    <span class="order-tracker-dot"></span><span id="orderTrackerText">Mi pedido</span>
+  </button>
+</div>
+
+<!-- ============================================================
+     PANEL DE ADMINISTRACIÓN (se muestra tras iniciar sesión)
+     ============================================================ -->
+<div class="admin-shell" id="adminShell" hidden></div>
+
+<!-- Contenedor de ventanas (modales, drawer del carrito) -->
+<div id="layerRoot"></div>
+
+<!-- Aviso flotante -->
+<div id="toastRoot"></div>
+
+<script src="./js/supabase.js"></script>
+<script src="./js/icons.js"></script>
+<script src="./js/supabaseClient.js"></script>
+<!-- config.js: valores manuales de fondo y ubicación editables desde el código.
+     Debe cargar ANTES que app.js para que app.js pueda leer window.CONFIG_MANUAL. -->
+<script src="./js/config.js"></script>
+<script src="./js/data.js"></script>
+<script src="./js/app.js"></script>
+<script src="./js/adminPanel.js"></script>
+</body>
+</html>
