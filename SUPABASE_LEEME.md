@@ -245,3 +245,16 @@ gestión para administradores. Los pedidos sin cuenta se crean únicamente con
   el logo anterior. Si el logo subido no carga, la tienda muestra el original. Requiere
   `sql/migracion_logo.sql`. El campo antiguo de foto de portada ya no se usa. En celular el logo baja debajo
   del título.
+
+## Stock y favoritos (actualización)
+
+- **Stock 99 en cada producto:** ejecuta una sola vez `sql/migracion_stock_99.sql` en el SQL Editor de Supabase
+  (después de `sql/migracion_stock.sql`). Los productos nuevos también empiezan con 99.
+- **Editar el stock (administrador):** panel → Productos. Cada fila tiene `−`, un campo numérico, `+` y **Guardar**.
+  También está el formulario **Editar** y el botón **Stock 99 a todos**. Con stock 0 el producto se oculta de la tienda
+  y, al volver a tener stock, se reactiva solo. Requiere cuenta con rol `administrador` (políticas RLS ya existentes).
+- **Tienda:** cada producto muestra su stock (`Stock: 99`, `¡Últimas N!` o `Agotado`). La bolsa no deja pedir más
+  de lo que hay; además la función SQL del servidor sigue validando el stock al confirmar el pedido.
+- **Favoritos:** el corazón de cada producto lo guarda o lo quita. Los favoritos se guardan en el navegador de cada
+  cliente (`localStorage`, clave `ps_favoritos`), por lo que no necesitan una tabla nueva ni inicio de sesión.
+  El filtro **Favoritos** del menú muestra solo los guardados.

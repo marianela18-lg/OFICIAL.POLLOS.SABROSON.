@@ -810,6 +810,72 @@
     avisar("Estado del pedido actualizado.");
   }
 
+  /** Guarda el stock de un producto. Con 0 se oculta de la tienda; al volver a tener stock se reactiva. */
+  async function guardarStock(id, cantidad) {
+    var p = buscarProducto(id);
+    if (!p) return;
+    if (!isFinite(cantidad) || cantidad < 0 || Math.floor(cantidad) !== cantidad) {
+      avisar("Escribe un stock válido: un número entero desde 0.");
+      return;
+    }
+    var antes = Number(p.stock != null ? p.stock : 0);
+    var cambios = { stock: cantidad };
+    if (cantidad === 0) cambios.disponible = false;
+    else if (antes <= 0) cambios.disponible = true;
+
+    state.ocupado = id;
+    pintar();
+    var res = await sb.from("productos").update(cambios).eq("id", id);
+    state.ocupado = "";
+
+    if (res.error) {
+      pintar();
+      avisar("No se pudo guardar el stock. Revisa las políticas RLS y que tu cuenta sea administrador.");
+      return;
+    }
+    state.productos = state.productos.map(function (x) {
+      return x.id === id ? Object.assign({}, x, cambios) : x;
+    });
+    pintar();
+    avisar("Stock de " + p.nombre + ": " + cantidad + (cantidad === 0 ? " (agotado, oculto en la tienda)" : ""));
+    window.PS_APP.recargarProductos();
+  }
+
+  /** Pone 99 unidades en todos los productos y reactiva los que estaban agotados. */
+  async function reponerTodoA99() {
+    if (!confirm("¿Poner 99 unidades de stock en TODOS los productos?")) return;
+    var agotados = state.productos.filter(function (p) { return Number(p.stock) <= 0; }).map(function (p) { return p.id; });
+
+    var res = await sb.from("productos").update({ stock: 99 }).not("id", "is", null);
+    if (res.error) {
+      avisar("No se pudo actualizar el stock. Revisa las políticas RLS y que tu cuenta sea administrador.");
+      return;
+    }
+    if (agotados.length) await sb.from("productos").update({ disponible: true }).in("id", agotados);
+
+    state.productos = state.productos.map(function (p) {
+      return Object.assign({}, p, { stock: 99 }, agotados.indexOf(p.id) !== -1 ? { disponible: true } : {});
+    });
+    pintar();
+    avisar("Stock repuesto: 99 unidades en cada producto.");
+    window.PS_APP.recargarProductos();
+  }
+
+  function celdaStock(p) {
+    var n = p.stock != null ? Number(p.stock) : 0;
+    var nivel = n <= 0 ? "out" : n <= 5 ? "low" : "ok";
+    var id = esc(p.id);
+    return (
+      '<div class="stock-edit ' + nivel + '"><small>' + (n <= 0 ? "Agotado" : n <= 5 ? "Stock bajo" : "Stock") + "</small>" +
+      '<div class="stock-edit-row">' +
+      '<button type="button" data-stock-delta="-1" data-id="' + id + '" aria-label="Restar uno">&minus;</button>' +
+      '<input type="number" min="0" step="1" inputmode="numeric" value="' + n + '" data-stock-input="' + id + '" aria-label="Stock de ' + esc(p.nombre) + '" />' +
+      '<button type="button" data-stock-delta="1" data-id="' + id + '" aria-label="Sumar uno">+</button>' +
+      '<button type="button" class="outline-button" data-stock-guardar="' + id + '"' + (state.ocupado === p.id ? " disabled" : "") + ">Guardar</button>" +
+      "</div></div>"
+    );
+  }
+
   async function alternarDisponible(producto) {
     state.ocupado = producto.id;
     pintar();
@@ -1008,7 +1074,7 @@
         '<label>Tamaño visible<input name="tamano_etiqueta" placeholder="Cuarto de pollo" value="' + esc(p.tamano_etiqueta || "") + '" /></label>' +
         '<label>Descripción<input name="descripcion" value="' + esc(p.descripcion || "") + '" /></label>' +
         '<label>Precio (Bs)<input name="precio" type="number" step="0.01" required value="' + esc(p.precio != null ? p.precio : "") + '" /></label>' +
-        '<label>Stock<input name="stock" type="number" value="' + esc(p.stock != null ? p.stock : 99) + '" /></label>' +
+        '<label>Stock<input name="stock" type="number" min="0" step="1" value="' + esc(p.stock != null ? p.stock : 99) + '" /></label>' +
         '<label>Etiqueta destacada<input name="etiqueta" placeholder="Favorito, Más pedido..." value="' + esc(p.etiqueta || "") + '" /></label>' +
         '<label>URL de imagen<input name="imagen_url" value="' + esc(p.imagen_url || "") + '" /></label>' +
         '<label class="file-picker">Subir imagen desde tu equipo<input type="file" name="archivo" accept="image/png,image/jpeg,image/webp" /></label>' +
@@ -1045,6 +1111,11 @@
           error = "Escribe un precio válido.";
           return pintarModal();
         }
+        var stockEscrito = Number(f.stock.value === "" ? 99 : f.stock.value);
+        if (!isFinite(stockEscrito) || stockEscrito < 0 || Math.floor(stockEscrito) !== stockEscrito) {
+          error = "El stock debe ser un número entero desde 0.";
+          return pintarModal();
+        }
 
         // IMPORTANTE: leer todo el formulario ANTES de repintar el modal,
         // porque pintarModal() recrea los campos y borra el archivo elegido.
@@ -1054,7 +1125,7 @@
           tamano_etiqueta: f.tamano_etiqueta.value.trim() || null,
           descripcion: f.descripcion.value.trim(),
           precio: Number(f.precio.value),
-          stock: Number(f.stock.value || 0),
+          stock: Number(f.stock.value === "" ? 99 : f.stock.value),
           etiqueta: f.etiqueta.value.trim() || null
         };
         var imagen = f.imagen_url.value.trim();
@@ -1071,10 +1142,15 @@
           }
 
           var datos = Object.assign({}, valores, { imagen_url: imagen || null });
+          if (editando) {
+            // Sin stock se oculta de la tienda; al volver a tener stock se reactiva.
+            if (valores.stock === 0) datos.disponible = false;
+            else if (Number(p.stock) <= 0) datos.disponible = true;
+          }
 
           var res = editando
             ? await sb.from("productos").update(datos).eq("id", idOriginal)
-            : await sb.from("productos").insert(Object.assign({ disponible: true }, datos));
+            : await sb.from("productos").insert(Object.assign({ disponible: valores.stock > 0 }, datos));
 
           if (res.error) throw res.error;
 
@@ -1330,6 +1406,7 @@
             esc(D.normalizeCategory(p.categoria)) +
             (p.tamano_etiqueta ? " · " + esc(p.tamano_etiqueta) : "") + "</span></div>" +
             "<b>" + D.formatPrice(Number(p.precio)) + "</b>" +
+            celdaStock(p) +
             '<span class="availability ' + (p.disponible ? "online" : "offline") + '">' +
             (p.disponible ? "Disponible" : "Oculto") + "</span>" +
             '<div class="product-row-actions">' +
@@ -1347,7 +1424,9 @@
     return (
       '<section class="admin-section-card">' +
       '<div class="section-toolbar"><div><span>Catálogo conectado a Supabase</span><h2>Productos</h2></div>' +
-      '<button class="primary-button" data-nuevo>' + icon("plus", 16) + " Nuevo producto</button></div>" +
+      '<div class="toolbar-actions">' +
+      '<button class="outline-button" data-reponer-todo>Stock 99 a todos</button>' +
+      '<button class="primary-button" data-nuevo>' + icon("plus", 16) + " Nuevo producto</button></div></div>" +
       '<div class="admin-product-list">' + lista + "</div></section>"
     );
   }
@@ -2140,6 +2219,30 @@
       b.addEventListener("click", function () {
         eliminarProducto(buscarProducto(b.dataset.eliminar));
       });
+    });
+
+    $$("[data-stock-delta]", shell).forEach(function (b) {
+      b.addEventListener("click", function () {
+        var inp = $('[data-stock-input="' + CSS.escape(b.dataset.id) + '"]', shell);
+        if (inp) inp.value = Math.max(0, (parseInt(inp.value, 10) || 0) + Number(b.dataset.stockDelta));
+      });
+    });
+
+    $$("[data-stock-guardar]", shell).forEach(function (b) {
+      b.addEventListener("click", function () {
+        var inp = $('[data-stock-input="' + CSS.escape(b.dataset.stockGuardar) + '"]', shell);
+        guardarStock(b.dataset.stockGuardar, inp ? Number(inp.value) : NaN);
+      });
+    });
+
+    $$("[data-stock-input]", shell).forEach(function (inp) {
+      inp.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") guardarStock(inp.dataset.stockInput, Number(inp.value));
+      });
+    });
+
+    $$("[data-reponer-todo]", shell).forEach(function (b) {
+      b.addEventListener("click", reponerTodoA99);
     });
 
     $$("[data-nuevo]", shell).forEach(function (b) {

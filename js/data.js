@@ -295,6 +295,11 @@
     return IMG.hero;
   }
 
+  // Catálogo de respaldo: 99 unidades por producto (igual que el valor por defecto de la base de datos).
+  FALLBACK.forEach(function (p) {
+    if (p.stock == null) p.stock = 99;
+  });
+
   window.PS_DATA = {
     IMG: IMG,
     PRESAS: PRESAS,

@@ -4494,3 +4494,142 @@ body.admin-mode {
 .logo-preview { background: #28241f; }
 .logo-preview img { width: 100%; height: 100%; object-fit: contain; }
 .logo-preview { width: 200px; }
+
+/* =========================================================
+   Favoritos y stock
+   ========================================================= */
+.product-card {
+  position: relative;
+}
+.fav-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  color: #8b7f72;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+.fav-btn:hover {
+  transform: scale(1.1);
+}
+.fav-btn.active {
+  color: #d6342c;
+}
+.fav-btn.active svg {
+  fill: currentColor;
+}
+.modal-image {
+  position: relative;
+}
+.modal-image .fav-btn {
+  top: 14px;
+  right: 14px;
+}
+.filter-tabs .fav-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.filter-tabs .fav-tab svg {
+  color: #d6342c;
+}
+.price-stock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.stock-tag {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #edf4e8;
+  color: #4f7a3d;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.stock-tag.low {
+  background: #fdf0dc;
+  color: #a8620a;
+}
+.stock-tag.out {
+  background: #fbe6e3;
+  color: #a8322b;
+}
+.modal-body .stock-tag {
+  margin: 0 0 14px;
+}
+
+/* Panel de administración: editar el stock en la propia fila */
+.toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.admin-product-row {
+  grid-template-columns: 56px 1.5fr 0.6fr 210px 0.7fr auto;
+}
+.stock-edit small {
+  display: block;
+  margin-bottom: 4px;
+  color: #8c8174;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.stock-edit.low small {
+  color: #a8620a;
+}
+.stock-edit.out small {
+  color: #a8322b;
+}
+.stock-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.stock-edit-row input {
+  width: 62px;
+  padding: 7px 4px;
+  border: 1px solid #ded5c8;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  text-align: center;
+}
+.stock-edit-row > button:not(.outline-button) {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #ded5c8;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+.stock-edit-row .outline-button {
+  padding: 6px 10px;
+  font-size: 11px;
+}
+@media (max-width: 900px) {
+  .admin-product-row {
+    grid-template-columns: 56px 1fr;
+  }
+  .stock-edit {
+    grid-column: 1 / -1;
+  }
+}

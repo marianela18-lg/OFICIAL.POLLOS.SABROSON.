@@ -27,6 +27,7 @@
     busqueda: "",
     cargando: true,
     cart: leerCarrito(),
+    favoritos: leerFavoritos(),
     sesion: { user: null, rol: "cliente" },
     qrUrl: "",
     navAbierta: false,
@@ -61,6 +62,85 @@
     } catch (e) {
       return [];
     }
+  }
+
+  /* ---------- Favoritos (se guardan en el navegador de cada cliente) ---------- */
+  function leerFavoritos() {
+    try {
+      var lista = JSON.parse(localStorage.getItem("ps_favoritos") || "[]");
+      return Array.isArray(lista) ? lista.map(String) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function guardarFavoritos() {
+    try {
+      localStorage.setItem("ps_favoritos", JSON.stringify(state.favoritos));
+    } catch (e) {
+      /* sin almacenamiento: los favoritos duran mientras la página esté abierta */
+    }
+  }
+
+  function esFavorito(id) {
+    return state.favoritos.indexOf(String(id)) !== -1;
+  }
+
+  function favBoton(id) {
+    var on = esFavorito(id);
+    return (
+      '<button type="button" class="fav-btn' + (on ? " active" : "") + '" data-fav="' + esc(id) + '" aria-pressed="' + on +
+      '" aria-label="' + (on ? "Quitar de favoritos" : "Agregar a favoritos") + '">' + icon("heart", 18) + "</button>"
+    );
+  }
+
+  function alternarFavorito(id) {
+    id = String(id);
+    var i = state.favoritos.indexOf(id);
+    var agrega = i === -1;
+    if (agrega) state.favoritos.push(id);
+    else state.favoritos.splice(i, 1);
+    guardarFavoritos();
+
+    var p = buscarProducto(id);
+    toast((p ? p.name : "Producto") + (agrega ? " se guardó en tus favoritos" : " se quitó de tus favoritos"));
+
+    $$('[data-fav="' + CSS.escape(id) + '"]').forEach(function (b) {
+      b.classList.toggle("active", agrega);
+      b.setAttribute("aria-pressed", String(agrega));
+      b.setAttribute("aria-label", agrega ? "Quitar de favoritos" : "Agregar a favoritos");
+    });
+    renderFiltros();
+    if (state.filtro === "Favoritos") renderMenu();
+  }
+
+  function botonFiltroFavoritos() {
+    var n = state.favoritos.length;
+    return (
+      '<button class="fav-tab' + (state.filtro === "Favoritos" ? " active" : "") + '" data-filtro="Favoritos">' +
+      icon("heart", 13) + " Favoritos" + (n ? " (" + n + ")" : "") + "</button>"
+    );
+  }
+
+  /* ---------- Stock ---------- */
+  function unidadesEnBolsa(id) {
+    return state.cart.reduce(function (s, l) {
+      return String(l.id) === String(id) ? s + l.quantity : s;
+    }, 0);
+  }
+
+  /** Unidades que todavía se pueden agregar a la bolsa (null = sin control de stock). */
+  function topeAgregable(p) {
+    if (!p || p.stock == null) return null;
+    return Number(p.stock) - unidadesEnBolsa(p.id);
+  }
+
+  function etiquetaStock(p) {
+    if (p.stock == null) return "";
+    var n = Number(p.stock);
+    if (n <= 0) return '<span class="stock-tag out">Agotado</span>';
+    if (n <= 5) return '<span class="stock-tag low">¡Últimas ' + n + "!</span>";
+    return '<span class="stock-tag">Stock: ' + n + "</span>";
   }
 
   function guardarCarrito() {
@@ -242,7 +322,7 @@
       return f !== "Bebidas" || hayBebidas;
     }).map(function (f) {
       return '<button class="' + (state.filtro === f ? "active" : "") + '" data-filtro="' + esc(f) + '">' + esc(f) + "</button>";
-    }).join("");
+    }).join("") + botonFiltroFavoritos();
   }
 
   $("#filterTabs").addEventListener("click", function (e) {
@@ -268,7 +348,7 @@
     // Cada palabra escrita debe aparecer en el nombre, descripción, categoría o etiqueta
     var palabras = normalizar(state.busqueda).split(/\s+/).filter(Boolean);
     return state.productos.filter(function (p) {
-      var coincideCategoria = state.filtro === "Todos" || p.category === state.filtro;
+      var coincideCategoria = state.filtro === "Todos" || (state.filtro === "Favoritos" ? esFavorito(p.id) : p.category === state.filtro);
       if (!coincideCategoria) return false;
       if (!palabras.length) return true;
       var texto = normalizar(
@@ -289,6 +369,7 @@
     var agotado = p.stock != null && p.stock <= 0;
     return (
       '<article class="product-card" data-id="' + esc(p.id) + '">' +
+      favBoton(p.id) +
       '<button class="product-image-wrap" data-abrir="' + esc(p.id) + '" aria-label="Ver ' + esc(p.name) + '">' +
       '<img src="' + esc(p.image) + '" alt="' + esc(p.name) + '" loading="lazy" />' +
       (p.badge ? '<span class="product-badge ' + esc(p.accent) + '">' + esc(p.badge) + "</span>" : "") +
@@ -310,7 +391,7 @@
           "</select></label>"
         : "") +
       '<div class="product-bottom">' +
-      "<strong>" + D.formatPrice(p.price) + "</strong>" +
+      '<div class="price-stock"><strong>' + D.formatPrice(p.price) + "</strong>" + (agotado ? "" : etiquetaStock(p)) + "</div>" +
       (agotado
         ? '<span class="menu-count">Agotado</span>'
         : '<button class="add-circle" data-agregar="' + esc(p.id) + '" aria-label="Agregar ' + esc(p.name) + '">' + icon("plus", 18) + "</button>") +
@@ -327,6 +408,18 @@
       ? "Cargando menú..."
       : lista.length + (lista.length === 1 ? " resultado" : " resultados") +
         (buscado ? ' para "' + buscado + '"' : "");
+
+    if (!lista.length && state.filtro === "Favoritos") {
+      cont.innerHTML =
+        '<div class="no-results">' +
+        icon("heart", 28) +
+        "<h3>Aún no tienes favoritos</h3>" +
+        "<p>Toca el corazón de un producto para guardarlo aquí y encontrarlo rápido.</p>" +
+        '<button class="outline-button" id="btnLimpiar">Ver todo el menú</button>' +
+        "</div>";
+      $("#btnLimpiar").addEventListener("click", limpiarFiltros);
+      return;
+    }
 
     if (!lista.length) {
       cont.innerHTML =
@@ -353,6 +446,11 @@
 
   // Delegación de eventos del menú
   $("#menuResults").addEventListener("click", function (e) {
+    var fav = e.target.closest("[data-fav]");
+    if (fav) {
+      alternarFavorito(fav.dataset.fav);
+      return;
+    }
     var abrir = e.target.closest("[data-abrir]");
     if (abrir) {
       var p = buscarProducto(abrir.dataset.abrir);
@@ -384,13 +482,13 @@
       return (
         '<div class="modal-backdrop"><div class="product-modal">' +
         '<button class="modal-close" data-cerrar aria-label="Cerrar">' + icon("x", 20) + "</button>" +
-        '<div class="modal-image"><img src="' + esc(p.image) + '" alt="' + esc(p.name) + '" /></div>' +
+        '<div class="modal-image"><img src="' + esc(p.image) + '" alt="' + esc(p.name) + '" />' + favBoton(p.id) + "</div>" +
         '<div class="modal-body">' +
         '<div class="product-meta"><span>' + esc(p.category) + "</span>" +
         "<span>" + icon("star", 13, { fill: "currentColor" }) + " 4.9</span></div>" +
         "<h2>" + esc(p.name) + "</h2>" +
         '<p class="modal-description">' + esc(p.description) +
-        (p.category === "Bebidas" ? "" : " Preparado al momento, con ingredientes frescos y ese toque sabroso que nos distingue.") + "</p>" +
+        (p.category === "Bebidas" ? "" : " Preparado al momento, con ingredientes frescos y ese toque sabroso que nos distingue.") + "</p>" + etiquetaStock(p) +
         (tienePresas(p)
           ? '<div class="option-block"><label>Presa preferida</label><div class="option-row" data-grupo="presa">' +
             D.PRESAS.map(function (o) {
@@ -428,7 +526,19 @@
       });
       $$("[data-cantidad]", root).forEach(function (b) {
         b.addEventListener("click", function () {
-          sel.cantidad = Math.max(1, sel.cantidad + Number(b.dataset.cantidad));
+          var nueva = Math.max(1, sel.cantidad + Number(b.dataset.cantidad));
+          var tope = topeAgregable(p);
+          if (tope != null && nueva > tope) {
+            nueva = Math.max(1, tope);
+            toast(tope > 0 ? "Solo quedan " + p.stock + " de " + p.name : "Ya tienes todo el stock de " + p.name + " en tu bolsa");
+          }
+          sel.cantidad = nueva;
+          pintar();
+        });
+      });
+      $$("[data-fav]", root).forEach(function (b) {
+        b.addEventListener("click", function () {
+          alternarFavorito(p.id);
           pintar();
         });
       });
@@ -451,6 +561,20 @@
      Carrito
      --------------------------------------------------------- */
   function agregarAlCarrito(linea) {
+    var ajustado = false;
+    var tope = topeAgregable(linea.product);
+    if (tope != null) {
+      if (tope <= 0) {
+        toast(Number(linea.product.stock) <= 0
+          ? linea.product.name + " está agotado"
+          : "Ya tienes en tu bolsa todo el stock de " + linea.product.name);
+        return false;
+      }
+      if (linea.quantity > tope) {
+        linea.quantity = tope;
+        ajustado = true;
+      }
+    }
     state.cart.push({
       id: linea.product.id,
       nombre: linea.product.name,
@@ -463,7 +587,10 @@
     });
     guardarCarrito();
     actualizarContador();
-    toast(linea.product.name + " se agregó a tu bolsa");
+    toast(ajustado
+      ? "Solo quedan " + linea.product.stock + " de " + linea.product.name + ": agregamos " + linea.quantity
+      : linea.product.name + " se agregó a tu bolsa");
+    return true;
   }
 
   function agregarRapido(p, presa) {
@@ -653,7 +780,17 @@
       $$("[data-qty]", root).forEach(function (b) {
         b.addEventListener("click", function () {
           var i = Number(b.dataset.qty);
-          state.cart[i].quantity = Math.max(1, state.cart[i].quantity + Number(b.dataset.delta));
+          var lin = state.cart[i];
+          var nueva = Math.max(1, lin.quantity + Number(b.dataset.delta));
+          var prod = buscarProducto(lin.id);
+          if (prod && prod.stock != null && Number(b.dataset.delta) > 0) {
+            var maxLinea = Number(prod.stock) - (unidadesEnBolsa(lin.id) - lin.quantity);
+            if (nueva > maxLinea) {
+              nueva = Math.max(1, maxLinea);
+              toast("Solo quedan " + prod.stock + " de " + prod.name);
+            }
+          }
+          lin.quantity = nueva;
           guardarCarrito();
           actualizarContador();
           pintar(recogerDatos(root));
